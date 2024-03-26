@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2 class="text-center">PDF Upload Successful!</h2>
+    <div class="container mt-3">
+      <div class="row justify-content-around">
+        <div class="col-4 ps-0">
+          <p class="lead">Ask a question about the uploaded PDF:</p>
+          <form id="question-form" method="POST">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-12">
+                <label for="question_area" class="visually-hidden">Question</label>
+                <textarea name="question" rows="5" cols="50" id="question_area"></textarea>
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-12">  
+                <button type="submit" class="btn btn-primary" id="ask-question-btn">Ask Question</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-4">
+          <p class="lead">Answer:</p>
+          <div class="card mt-3" style="width: 24rem;">
+            <div class="card-body">
+              <p class="card-text" id="answer-placeholder">{{ answer }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+  
+{% block js %}
+  <script>
+    $(document).ready(function() {
+      $("#question-form").submit(function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Change button text and disable
+        $("#ask-question-btn").html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`);
+        $("#ask-question-btn").attr("disabled", true);
+
+        // Send Ajax request
+        $.ajax({
+          url: "/ai-assistent", // Adjust URL if needed
+          type: "POST",
+          data: $(this).serialize(),
+          success: function(data) {
+            $("#answer-placeholder").text(data.answer);
+            $("#ask-question-btn").html("Ask Question"); // Reset button text
+            $("#ask-question-btn").attr("disabled", false);
+          },
+          error: function(error) {
+            console.error("Error:", error);
+            $("#answer-placeholder").text("An error occurred.");
+            $("#ask-question-btn").html("Ask Question"); // Reset button text
+            $("#ask-question-btn").attr("disabled", false);
+          }
+        });
+      });
+    });
+  </script>
+{% endblock %}
